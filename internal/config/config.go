@@ -11,6 +11,7 @@ type Config struct {
 	DBPassword string
 	DBName     string
 	ServerPort string
+	JWTSecret  string
 }
 
 func Load() *Config {
@@ -21,6 +22,7 @@ func Load() *Config {
 	cfg.DBPassword = getEnv("DB_PASSWORD", "postgres")
 	cfg.DBName = getEnv("DB_NAME", "app")
 	cfg.ServerPort = getEnv("SERVER_PORT", "8080")
+	cfg.JWTSecret = getEnv("JWT_SECRET", "secret")
 	return cfg
 }
 
