@@ -9,11 +9,11 @@ import (
 )
 
 type AuthHandler struct {
-	repo   *repository.UserRepository
+	repo   repository.UserRepositoryInterface
 	secret string
 }
 
-func NewAuthHandler(repo *repository.UserRepository, secret string) *AuthHandler {
+func NewAuthHandler(repo repository.UserRepositoryInterface, secret string) *AuthHandler {
 	return &AuthHandler{repo: repo, secret: secret}
 }
 
@@ -27,10 +27,25 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user, err := h.repo.GetByUsername(req.Username)
-	if err != nil || !auth.CheckPassword(user.PasswordHash, req.Password) {
+	if err != nil {
 		http.Error(w, "invalid credentials", http.StatusUnauthorized)
 		return
 	}
+
+	if user.Locked {
+		http.Error(w, "user locked", http.StatusForbidden)
+		return
+	}
+
+	if !auth.CheckPassword(user.PasswordHash, req.Password) {
+		attempts := user.FailedAttempts + 1
+		locked := attempts >= 10
+		_ = h.repo.UpdateLoginState(user.ID, attempts, locked)
+		http.Error(w, "invalid credentials", http.StatusUnauthorized)
+		return
+	}
+
+	_ = h.repo.UpdateLoginState(user.ID, 0, false)
 	token, err := auth.GenerateToken(user.ID, h.secret)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -32,6 +32,14 @@ func (s *stubRepo) List() ([]*models.User, error) {
 	return s.users, s.err
 }
 
+func (s *stubRepo) GetByUsername(username string) (*models.User, error) {
+	return s.user, s.err
+}
+
+func (s *stubRepo) UpdateLoginState(id int, attempts int, locked bool) error {
+	return nil
+}
+
 func TestUserHandler_Create(t *testing.T) {
 	repo := &stubRepo{}
 	h := NewUserHandler(repo)

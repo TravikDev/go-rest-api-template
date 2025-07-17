@@ -16,8 +16,22 @@ type stubAuthRepo struct {
 	err  error
 }
 
+func (s *stubAuthRepo) Create(u *models.User) error { return nil }
+
+func (s *stubAuthRepo) GetByID(id int) (*models.User, error) { return s.user, s.err }
+
+func (s *stubAuthRepo) List() ([]*models.User, error) { return nil, nil }
+
 func (s *stubAuthRepo) GetByUsername(username string) (*models.User, error) {
 	return s.user, s.err
+}
+
+func (s *stubAuthRepo) UpdateLoginState(id int, attempts int, locked bool) error {
+	if s.user != nil {
+		s.user.FailedAttempts = attempts
+		s.user.Locked = locked
+	}
+	return nil
 }
 
 func TestAuthHandler_Login_Success(t *testing.T) {
