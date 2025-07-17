@@ -34,6 +34,24 @@ func (r *UserRepository) GetByID(id int) (*models.User, error) {
 	return u, nil
 }
 
+func (r *UserRepository) GetByEmail(email string) (*models.User, error) {
+	row := r.db.QueryRow(`SELECT id, name, email FROM users WHERE email=$1`, email)
+	u := &models.User{}
+	if err := row.Scan(&u.ID, &u.Name, &u.Email); err != nil {
+		return nil, err
+	}
+	return u, nil
+}
+
+func (r *UserRepository) GetByName(name string) (*models.User, error) {
+	row := r.db.QueryRow(`SELECT id, name, email FROM users WHERE name=$1`, name)
+	u := &models.User{}
+	if err := row.Scan(&u.ID, &u.Name, &u.Email); err != nil {
+		return nil, err
+	}
+	return u, nil
+}
+
 func (r *UserRepository) List() ([]*models.User, error) {
 	rows, err := r.db.Query(`SELECT id, name, email FROM users`)
 	if err != nil {

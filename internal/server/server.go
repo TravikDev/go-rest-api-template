@@ -5,19 +5,30 @@ import (
 	"net/http"
 
 	"go-rest-api-template/internal/handler"
+	"go-rest-api-template/internal/middleware"
 )
 
 type Server struct {
 	userHandler *handler.UserHandler
+	authHandler *handler.AuthHandler
 	port        string
+	jwtSecret   string
 }
 
-func New(userHandler *handler.UserHandler, port string) *Server {
-	return &Server{userHandler: userHandler, port: port}
+func New(userHandler *handler.UserHandler, authHandler *handler.AuthHandler, port, secret string) *Server {
+	return &Server{userHandler: userHandler, authHandler: authHandler, port: port, jwtSecret: secret}
 }
 
 func (s *Server) routes() {
-	http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			s.authHandler.Login(w, r)
+			return
+		}
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	})
+
+	http.HandleFunc("/users", middleware.JWTAuth(s.jwtSecret, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			s.userHandler.Create(w, r)
 			return
@@ -27,15 +38,15 @@ func (s *Server) routes() {
 			return
 		}
 		w.WriteHeader(http.StatusMethodNotAllowed)
-	})
+	}))
 
-	http.HandleFunc("/users/show", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/users/show", middleware.JWTAuth(s.jwtSecret, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			s.userHandler.GetByID(w, r)
 			return
 		}
 		w.WriteHeader(http.StatusMethodNotAllowed)
-	})
+	}))
 }
 
 func (s *Server) Start() error {

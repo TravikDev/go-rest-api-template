@@ -23,7 +23,8 @@ func main() {
 
 	repo := repository.NewUserRepository(database)
 	userHandler := handler.NewUserHandler(repo)
-	srv := server.New(userHandler, cfg.ServerPort)
+	authHandler := handler.NewAuthHandler(repo, cfg.JWTSecret)
+	srv := server.New(userHandler, authHandler, cfg.ServerPort, cfg.JWTSecret)
 
 	log.Printf("starting server on %s", cfg.ServerPort)
 	if err := srv.Start(); err != nil {
