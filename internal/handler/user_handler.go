@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"go-rest-api-template/internal/auth"
 	"go-rest-api-template/internal/models"
 	"go-rest-api-template/internal/repository"
 )
@@ -18,12 +19,21 @@ func NewUserHandler(repo repository.UserRepositoryInterface) *UserHandler {
 }
 
 func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
-	var u models.User
-	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
+	var req struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if err := h.repo.Create(&u); err != nil {
+	hash, err := auth.HashPassword(req.Password)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	user := models.User{Username: req.Username, PasswordHash: hash}
+	if err := h.repo.Create(&user); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
