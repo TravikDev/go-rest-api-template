@@ -21,10 +21,14 @@ func main() {
 		log.Fatalf("db connect: %v", err)
 	}
 
-	repo := repository.NewUserRepository(database)
-	userHandler := handler.NewUserHandler(repo)
-	authHandler := handler.NewAuthHandler(repo, cfg.JWTSecret)
-	srv := server.New(userHandler, authHandler, cfg.ServerPort, cfg.JWTSecret)
+	userRepo := repository.NewUserRepository(database)
+	charRepo := repository.NewCharacterRepository(database)
+
+	userHandler := handler.NewUserHandler(userRepo)
+	authHandler := handler.NewAuthHandler(userRepo, cfg.JWTSecret)
+	charHandler := handler.NewCharacterHandler(charRepo)
+
+	srv := server.New(userHandler, authHandler, charHandler, cfg.ServerPort, cfg.JWTSecret)
 
 	log.Printf("starting server on %s", cfg.ServerPort)
 	if err := srv.Start(); err != nil {
