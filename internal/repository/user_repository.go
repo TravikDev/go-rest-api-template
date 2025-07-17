@@ -6,6 +6,12 @@ import (
 	"go-rest-api-template/internal/models"
 )
 
+type UserRepositoryInterface interface {
+	Create(user *models.User) error
+	GetByID(id int) (*models.User, error)
+	List() ([]*models.User, error)
+}
+
 type UserRepository struct {
 	db *sql.DB
 }
