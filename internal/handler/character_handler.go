@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"go-rest-api-template/internal/middleware"
 	"go-rest-api-template/internal/models"
 	"go-rest-api-template/internal/repository"
 )
@@ -33,8 +34,13 @@ func (h *CharacterHandler) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	userID, ok := middleware.UserIDFromContext(r.Context())
+	if !ok || userID != req.UserID {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
 	char := models.Character{
-		UserID:     req.UserID,
+		UserID:     userID,
 		Nickname:   req.Nickname,
 		Level:      req.Level,
 		Experience: req.Experience,

@@ -21,7 +21,9 @@ can update the schema.
 - `GET /users` – list users
 - `GET /users/show?id=1` – get user by ID
 - `POST /login` – obtain a JWT token using a username and password
-- `POST /characters` – create a character for a user
+- `POST /characters` – authenticated user creates their own character
 
 All `/users` endpoints require a valid `Authorization: Bearer <token>` header.
+Creating a character also requires authentication and the `user_id` in the
+request must match the token subject.
 

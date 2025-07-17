@@ -2,10 +2,12 @@ package handler
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"go-rest-api-template/internal/middleware"
 	"go-rest-api-template/internal/models"
 )
 
@@ -32,6 +34,7 @@ func TestCharacterHandler_Create(t *testing.T) {
 
 	body := bytes.NewBufferString(`{"user_id":1,"nickname":"Hero","level":1,"experience":0,"x":0,"y":0,"z":0}`)
 	req := httptest.NewRequest(http.MethodPost, "/characters", body)
+	req = req.WithContext(context.WithValue(req.Context(), middleware.UserIDKey, 1))
 	rr := httptest.NewRecorder()
 
 	h.Create(rr, req)
@@ -41,5 +44,24 @@ func TestCharacterHandler_Create(t *testing.T) {
 	}
 	if !repo.createCalled {
 		t.Fatalf("expected Create to be called")
+	}
+}
+
+func TestCharacterHandler_CreateForbidden(t *testing.T) {
+	repo := &stubCharRepo{}
+	h := NewCharacterHandler(repo)
+
+	body := bytes.NewBufferString(`{"user_id":2,"nickname":"Hero","level":1,"experience":0,"x":0,"y":0,"z":0}`)
+	req := httptest.NewRequest(http.MethodPost, "/characters", body)
+	req = req.WithContext(context.WithValue(req.Context(), middleware.UserIDKey, 1))
+	rr := httptest.NewRecorder()
+
+	h.Create(rr, req)
+
+	if rr.Code != http.StatusForbidden {
+		t.Fatalf("expected status 403, got %d", rr.Code)
+	}
+	if repo.createCalled {
+		t.Fatalf("expected Create not to be called")
 	}
 }
