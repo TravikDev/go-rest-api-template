@@ -14,7 +14,7 @@ create the `users` table automatically.
 
 ## Endpoints
 
-- `POST /users` – create a user
+- `POST /register` – register a user
 - `GET /users` – list users
 - `GET /users/show?id=1` – get user by ID
 - `POST /login` – obtain a JWT token using a username

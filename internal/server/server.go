@@ -28,11 +28,15 @@ func (s *Server) routes() {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	})
 
-	http.HandleFunc("/users", middleware.JWTAuth(s.jwtSecret, func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
-			s.userHandler.Create(w, r)
+			s.userHandler.Register(w, r)
 			return
 		}
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	})
+
+	http.HandleFunc("/users", middleware.JWTAuth(s.jwtSecret, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			s.userHandler.List(w, r)
 			return

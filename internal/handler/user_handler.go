@@ -17,7 +17,7 @@ func NewUserHandler(repo repository.UserRepositoryInterface) *UserHandler {
 	return &UserHandler{repo: repo}
 }
 
-func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var u models.User
 	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

@@ -25,7 +25,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	user, err := h.repo.GetByName(req.Username)
+	user, err := h.repo.GetByUsername(req.Username)
 	if err != nil {
 		http.Error(w, "invalid credentials", http.StatusUnauthorized)
 		return
