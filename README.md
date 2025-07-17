@@ -11,6 +11,9 @@ docker-compose up --build
 The application will be available on `http://localhost:8080` and connects to a PostgreSQL database exposed on port `5432`.
 When the database container starts for the first time it executes `db/init.sql` to
 create the `users` table automatically.
+If you previously ran the project before the username change, remove the old
+database volume with `docker-compose down -v` so the migration in `db/init.sql`
+can update the schema.
 
 ## Endpoints
 
