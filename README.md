@@ -17,10 +17,10 @@ can update the schema.
 
 ## Endpoints
 
-- `POST /register` – register a user
+- `POST /register` – register a user with a username and password
 - `GET /users` – list users
 - `GET /users/show?id=1` – get user by ID
-- `POST /login` – obtain a JWT token using a username
+- `POST /login` – obtain a JWT token using a username and password
 
 All `/users` endpoints require a valid `Authorization: Bearer <token>` header.
 

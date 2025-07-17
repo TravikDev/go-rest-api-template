@@ -21,7 +21,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 }
 
 func (r *UserRepository) Create(user *models.User) error {
-	_, err := r.db.Exec(`INSERT INTO users (username) VALUES ($1)`, user.Username)
+	_, err := r.db.Exec(`INSERT INTO users (username, password_hash) VALUES ($1, $2)`, user.Username, user.PasswordHash)
 	return err
 }
 
@@ -35,9 +35,9 @@ func (r *UserRepository) GetByID(id int) (*models.User, error) {
 }
 
 func (r *UserRepository) GetByUsername(username string) (*models.User, error) {
-	row := r.db.QueryRow(`SELECT id, username FROM users WHERE username=$1`, username)
+	row := r.db.QueryRow(`SELECT id, username, password_hash FROM users WHERE username=$1`, username)
 	u := &models.User{}
-	if err := row.Scan(&u.ID, &u.Username); err != nil {
+	if err := row.Scan(&u.ID, &u.Username, &u.PasswordHash); err != nil {
 		return nil, err
 	}
 	return u, nil
