@@ -1,11 +1,24 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"go-rest-api-template/internal/auth"
 )
+
+type contextKey string
+
+const UserIDKey contextKey = "userID"
+
+// UserIDFromContext extracts the authenticated user ID from ctx.
+func UserIDFromContext(ctx context.Context) (int, bool) {
+	v := ctx.Value(UserIDKey)
+	id, ok := v.(int)
+	return id, ok
+}
 
 func JWTAuth(secret string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -15,11 +28,17 @@ func JWTAuth(secret string, next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-		_, err := auth.ParseToken(tokenStr, secret)
+		claims, err := auth.ParseToken(tokenStr, secret)
 		if err != nil {
 			http.Error(w, "invalid token", http.StatusUnauthorized)
 			return
 		}
-		next(w, r)
+		id, err := strconv.Atoi(claims.Sub)
+		if err != nil {
+			http.Error(w, "invalid token", http.StatusUnauthorized)
+			return
+		}
+		ctx := context.WithValue(r.Context(), UserIDKey, id)
+		next(w, r.WithContext(ctx))
 	}
 }
